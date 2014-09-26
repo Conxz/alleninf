@@ -52,13 +52,17 @@ def get_expression_values_from_probe_ids_restapi(probe_ids):
 
     expression_values = [[float(expression_value) for expression_value in data[
         "msg"]["probes"][i]["expression_level"]] for i in range(len(probe_ids))]
+    # get z-scores
+    z_scores = [[float(z_score) for z_score in data[
+        "msg"]["probes"][i]["z-score"]] for i in range(len(probe_ids))]
+    
     well_ids = [sample["sample"]["well"] for sample in data["msg"]["samples"]]
     donor_names = [sample["donor"]["name"]
                    for sample in data["msg"]["samples"]]
     well_coordinates = [sample["sample"]["mri"]
                         for sample in data["msg"]["samples"]]
 
-    return expression_values, well_ids, donor_names
+    return expression_values, well_ids, donor_names, z_scores
 
 
 def get_expression_values_from_probe_ids_hdf(probe_ids):

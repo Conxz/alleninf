@@ -52,8 +52,16 @@ def main():
                         type=nifti_file)
     parser.add_argument("--radius", help="Radius in mm of of the sphere used to average statistical values at the location of each probe (default: 4mm).",
                         default=4, type=float)
+    parser.add_argument("--normalized_gene",
+                        dest = 'normgene',
+                        default = False,
+                        action = 'store_true',
+                        help="Use normalized gene expression data.")
     parser.add_argument("--probe_exclusion_keyword", help="If the probe name includes this string the probe will not be used.",
                         type=str)
+    parser.add_argument("--save_data_to", 
+                        help="Sava nifti and gene data and mni coordinates to: None (default) or filename.",
+                        default="None")
 
     args = parser.parse_args()
 
@@ -66,13 +74,16 @@ def main():
         print "Probes after applying exclusion cryterion: %s" % (", ".join(probes_dict.values()))
 
     print "Fetching expression values for probes %s" % (", ".join(probes_dict.values()))
-    expression_values, well_ids, donor_names = get_expression_values_from_probe_ids(
-        probes_dict.keys())
+    expression_values, well_ids, _, donor_names, z_scores = \
+                get_expression_values_from_probe_ids(probes_dict.keys())
+    #expression_values, well_ids, donor_names = get_expression_values_from_probe_ids(
+    #    probes_dict.keys())
     print "Found data from %s wells sampled across %s donors" % (len(well_ids), len(set(donor_names)))
 
     print "Combining information from selected probes"
     combined_expression_values = combine_expression_values(
         expression_values, method=args.probes_reduction_method)
+    combined_z_scores = combine_expression_values(z_scores, method=args.probes_reduction_method)
 
     print "Translating locations of the wells to MNI space"
     mni_coordinates = get_mni_coordinates_from_wells(well_ids)
@@ -82,10 +93,20 @@ def main():
         args.stat_map, mni_coordinates, mask_file=args.mask, radius=args.radius, verbose=True)
 
     # preparing the data frame
-    names = ["NIFTI values", "%s expression" % args.gene_name, "donor ID"]
-    data = pd.DataFrame(np.array(
-        [nifti_values, combined_expression_values, donor_names]).T, columns=names)
-    data = data.convert_objects(convert_numeric=True)
+    #names = ["NIFTI values", "%s expression" % args.gene_name, "donor ID"]
+    names = ["NIFTI values", "%s expression"%args.gene_name, "donor ID", "Normalized %s expression"%args.gene_name]
+    data = pd.DataFrame(np.array([nifti_values, 
+        combined_expression_values, donor_names, combined_z_scores]).T, columns=names)
+    data = data.convert_objects(convert_numeric=True)   
+    #data = pd.DataFrame(np.array(
+    #    [nifti_values, combined_expression_values, donor_names]).T, columns=names)
+    #data = data.convert_objects(convert_numeric=True)
+    
+    if args.save_data_to != 'None':
+        np.savez(args.save_data_to+'_'+args.gene_name, data=data,
+                mni=mni_coordinates, gene=args.gene_name, 
+                nifti=args.stat_map, radius=args.radius)
+    
     len_before = len(data)
     data.dropna(axis=0, inplace=True)
     nans = len_before - len(data)
@@ -94,17 +115,37 @@ def main():
 
     if args.inference_method == "fixed":
         print "Performing fixed effect analysis"
-        fixed_effects(data, ["NIFTI values", "%s expression" % args.gene_name])
+        #fixed_effects(data, ["NIFTI values", "%s expression" % args.gene_name])
+        if args.normgene:
+            fixed_effects(data, ["NIFTI values", \
+                    "Normalized %s expression"%args.gene_name])
+        else:
+            fixed_effects(data, ["NIFTI values", \
+                    "%s expression"%args.gene_name])
 
     if args.inference_method == "approximate_random":
         print "Performing approximate random effect analysis"
-        approximate_random_effects(
-            data, ["NIFTI values", "%s expression" % args.gene_name], "donor ID")
+        if args.normgene:
+            approximate_random_effects(data, ["NIFTI values", \
+                    "Normalized %s expression"%args.gene_name], "donor ID")
+        else:
+            approximate_random_effects(data, ["NIFTI values", \
+                    "%s expression"%args.gene_name], "donor ID")
+        #approximate_random_effects(
+        #    data, ["NIFTI values", "%s expression" % args.gene_name], "donor ID")
 
     if args.inference_method == "bayesian_random":
         print "Fitting Bayesian hierarchical model"
-        bayesian_random_effects(
-            data, ["NIFTI values", "%s expression" % args.gene_name], "donor ID", args.n_samples, args.n_burnin)
+        if args.normgene:
+            bayesian_random_effects(data, ["NIFTI values", \
+                    "Normalized %s expression"%args.gene_name], "donor ID", \
+                    args.n_samples, args.n_burnin)
+        else:
+            bayesian_random_effects(data, ["NIFTI values", \
+                    "%s expression"%args.gene_name], "donor ID", \
+                    args.n_samples, args.n_burnin)
+        #bayesian_random_effects(
+        #    data, ["NIFTI values", "%s expression" % args.gene_name], "donor ID", args.n_samples, args.n_burnin)
 
 
 if __name__ == '__main__':
