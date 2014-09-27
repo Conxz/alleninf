@@ -76,6 +76,7 @@ setup(
     entry_points={
         'console_scripts': [
             'alleninf=alleninf.scripts:main',
+            'alleninf_gewa=alleninf.gewa_scripts:main',
         ],
     },
 )
