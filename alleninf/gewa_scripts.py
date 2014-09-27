@@ -40,10 +40,22 @@ def readgenes(fgene_names):
 
 def main():
     parser = argparse.ArgumentParser(description="A traversal version of alleninfo.")
-    parser.add_argument("stat_map", help="Unthresholded statistical map in the form of a 3D NIFTI file (.nii or .nii.gz) in MNI space.", type=nifti_file)
-    parser.add_argument("gene_names_file", help="A file of the gene names you want to compare your map with. For list of all available genes see: " \
+    parser.add_argument("--stat_map",
+                        required=True,
+                        help="Unthresholded statistical map in the form of a 3D NIFTI file (.nii or .nii.gz) in MNI space.", 
+                        type=nifti_file)
+    
+    grp_gene = parser.add_mutually_exclusive_group(required=True)
+    grp_gene.add_argument("--gene_name",
+                        default = None,
+                        help="Name of the gene you want to compare your map with. For list of all available genes see: "
+                        "http://help.brain-map.org/download/attachments/2818165/HBA_ISH_GeneList.pdf?version=1&modificationDate=1348783035873.",
+                        type=str)
+    grp_gene.add_argument("--gene_names_file", 
+                        help="A file of the gene names you want to compare your map with. For list of all available genes see: " \
                         "http://help.brain-map.org/download/attachments/2818165/HBA_ISH_GeneList.pdf?version=1&modificationDate=1348783035873.",
                         type=file)
+    
     parser.add_argument("--inference_method", help="Which model to use: fixed - fixed effects, approximate_random - approximate random effects (default), "\
                         "bayesian_random - Bayesian hierarchical model (requires PyMC3).",
                         default="approximate_random")
@@ -71,8 +83,10 @@ def main():
     
     args = parser.parse_args()
     
-    #print args.gene_names_file
-    gene_names = readgenes(args.gene_names_file)
+    if args.gene_name:
+        gene_names = [args.gene_name]
+    else:
+        gene_names = readgenes(args.gene_names_file)
     n_gane = len(gene_names)
 
     if args.inference_method == "fixed":
