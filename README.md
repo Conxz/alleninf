@@ -1,7 +1,8 @@
 alleninf
 ========
 
-Compare an unthresholded statistical map of a brain with gene expression patterns from [Allen Human Brain Atlas](http://human.brain-map.org/).
+Compare a statistical map of a brain with gene expression patterns from [Allen Human Brain Atlas](http://human.brain-map.org/).
+Notes: See also version from Chris Filo Gorgolewski[alleninf](https://github.com/chrisfilo/alleninf).
 
 Installation
 ------------
