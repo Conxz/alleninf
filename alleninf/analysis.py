@@ -21,8 +21,10 @@ def approximate_random_effects(data, labels, group):
 
     correlation_per_donor = {}
     for donor_id in set(data[group]):
-        correlation_per_donor[donor_id], _, _, _, _ = linregress(list(data[labels[0]][data[group] == donor_id]),
+        correlation_per_donor[donor_id], _, tempr, tempp, _ = linregress(list(data[labels[0]][data[group] == donor_id]),
                                                        list(data[labels[1]][data[group] == donor_id]))
+        print donor_id, 'beta/r/p:', slope_per_donor[donor_id], '/', tempr, '/',tempp
+
     average_slope = np.array(correlation_per_donor.values()).mean()
     t, p_val = ttest_1samp(correlation_per_donor.values(), 0)
     print "Averaged slope across donors = %g (t=%g, p=%g)"%(average_slope, t, p_val)
