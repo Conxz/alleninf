@@ -113,7 +113,8 @@ def main():
             print "Probes after applying exclusion cryterion: %s" % (", ".join(probes_dict.values()))
         
         print "Fetching expression values for probes %s"%(", ".join(probes_dict.values()))
-        expression_values, well_ids, _, donor_names, z_scores = get_expression_values_from_probe_ids(probes_dict.keys())
+        expression_values, well_ids, donor_names, z_scores = get_expression_values_from_probe_ids(probes_dict.keys())
+        #expression_values, well_ids, _, donor_names, z_scores = get_expression_values_from_probe_ids(probes_dict.keys())
         print "Found data from %s wells sampled across %s donors"%(len(well_ids), len(set(donor_names)))
         
         print "Combining information from selected probes"
