@@ -20,6 +20,7 @@ def fixed_effects(data, labels):
 def approximate_random_effects(data, labels, group):
 
     slope_per_donor = {}
+    r_per_donor = {}
     p_per_donor = {}
     for donor_id in set(data[group]):
         slope_per_donor[donor_id], _, r_per_donor[donor_id], p_per_donor[donor_id], _ = linregress(list(data[labels[0]][data[group] == donor_id]),
