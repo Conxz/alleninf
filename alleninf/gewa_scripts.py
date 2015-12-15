@@ -80,6 +80,9 @@ def main():
     parser.add_argument("--save_data_to", 
                         help="Sava nifti and gene data and mni coordinates to: None (default) or filename.",
                         default="None")
+    parser.add_argument("--out", 
+                        help="Sava stats results to outfile.",
+                        default=None)
     
     args = parser.parse_args()
     
@@ -194,11 +197,11 @@ def main():
     
     # Save data.
     if args.inference_method == "fixed":
-        np.savez('gewa_fixed_out', r=rs, p=ps, genes=gene_names)
+        np.savez(args.out+'gewa_fixed_out', r=rs, p=ps, genes=gene_names)
     elif args.inference_method == "approximate_random":
-        np.savez('gewa_random_out', beta=bs, t=ts, p=ps, genes=gene_names, rawbetas=rawbetas, rawcorrs=rawcorrs, rawpvals = rawpvals)
+        np.savez(args.out+'gewa_random_out', beta=bs, t=ts, p=ps, genes=gene_names, rawbetas=rawbetas, rawcorrs=rawcorrs, rawpvals = rawpvals)
     else:
-        np.savez('gewa_bayesian_out', beta=bs, p=ps, genes=gene_names)
+        np.savez(args.out+'gewa_bayesian_out', beta=bs, p=ps, genes=gene_names)
     
 if __name__ == '__main__':
     main()
