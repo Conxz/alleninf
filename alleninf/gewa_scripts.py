@@ -96,6 +96,9 @@ def main():
         bs = []
         ts = []
         ps = []
+        rawbetas = []
+        rawcorrs = []
+        rawpvals = []
     elif args.inference_method == "bayesian_random":
         bs = []
         ps = []
@@ -163,14 +166,17 @@ def main():
             print "Performing approximate random effect analysis"
             #b,t,p = approximate_random_effects(data, ["NIFTI values", "%s expression"%gene_name], "donor ID")
             if args.normgene:
-                b,t,p = approximate_random_effects(data, ["NIFTI values", \
+                b,t,p,rawbs,rawrs,rawps = approximate_random_effects(data, ["NIFTI values", \
                         "Normalized %s expression"%args.gene_name], "donor ID")
             else:
-                b,t,p = approximate_random_effects(data, ["NIFTI values", \
+                b,t,p,rawbs,rawrs,rawps = approximate_random_effects(data, ["NIFTI values", \
                         "%s expression"%args.gene_name], "donor ID")
             bs.append(b)
             ts.append(t)
             ps.append(p)
+            rawbetas.append(rawbs)
+            rawcorrs.append(rawrs)
+            rawpvals.append(rawps)
 
         if args.inference_method == "bayesian_random":
             print "Fitting Bayesian hierarchical model"
@@ -190,7 +196,7 @@ def main():
     if args.inference_method == "fixed":
         np.savez('gewa_fixed_out', r=rs, p=ps, genes=gene_names)
     elif args.inference_method == "approximate_random":
-        np.savez('gewa_random_out', beta=bs, t=ts, p=ps, genes=gene_names)
+        np.savez('gewa_random_out', beta=bs, t=ts, p=ps, genes=gene_names, rawbetas=rawbetas, rawcorrs=rawcorrs, rawpvals = rawpvals)
     else:
         np.savez('gewa_bayesian_out', beta=bs, p=ps, genes=gene_names)
     

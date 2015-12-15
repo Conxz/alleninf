@@ -22,7 +22,7 @@ def approximate_random_effects(data, labels, group):
     slope_per_donor = {}
     p_per_donor = {}
     for donor_id in set(data[group]):
-        slope_per_donor[donor_id], _, _, p_per_donor[donor_id], _ = linregress(list(data[labels[0]][data[group] == donor_id]),
+        slope_per_donor[donor_id], _, r_per_donor[donor_id], p_per_donor[donor_id], _ = linregress(list(data[labels[0]][data[group] == donor_id]),
                                                        list(data[labels[1]][data[group] == donor_id]))
         print donor_id, ': beta = ', slope_per_donor[donor_id], ', p = ', p_per_donor[donor_id]
     average_slope = np.array(slope_per_donor.values()).mean()
@@ -35,7 +35,7 @@ def approximate_random_effects(data, labels, group):
     #sns.lmplot(labels[0], labels[1], data, hue=group, col=group, col_wrap=3)
     #plt.show()
     
-    return average_slope, t, p_val
+    return average_slope, t, p_val, slope_per_donor, r_per_donor, p_per_donor
 
 def bayesian_random_effects(data, labels, group, n_samples=2000, n_burnin=500):
     import pymc as pm
